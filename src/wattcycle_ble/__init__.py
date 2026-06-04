@@ -6,7 +6,9 @@ Example::
     from wattcycle_ble import WattcycleClient
 
     async def main():
-        async with WattcycleClient("C0:D6:3C:57:EF:2F") as client:
+        device_id = "C0:D6:3C:57:EF:2F"  # or a macOS CoreBluetooth UUID
+
+        async with WattcycleClient(device_id) as client:
             await client.detect_frame_head()
             data = await client.read_analog_quantity()
             print(f"SOC: {data.soc}%  Voltage: {data.module_voltage}V")

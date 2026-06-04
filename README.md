@@ -37,20 +37,22 @@ wattcycle-ble scan
 Read battery data:
 
 ```bash
-wattcycle-ble read C0:D6:3C:57:EF:2F
+wattcycle-ble read <device-id>
 ```
 
 Continuously poll (every 5 seconds):
 
 ```bash
-wattcycle-ble loop C0:D6:3C:57:EF:2F --interval 5
+wattcycle-ble loop <device-id> --interval 5
 ```
 
 Add `-v` for debug logging:
 
 ```bash
-wattcycle-ble -v read C0:D6:3C:57:EF:2F
+wattcycle-ble -v read <device-id>
 ```
+
+`<device-id>` is the platform BLE identifier: a MAC address on Linux/Windows or the Apple/CoreBluetooth UUID on macOS.
 
 ## Library Usage
 
@@ -59,7 +61,9 @@ import asyncio
 from wattcycle_ble import WattcycleClient
 
 async def main():
-    async with WattcycleClient("C0:D6:3C:57:EF:2F") as client:
+    device_id = "C0:D6:3C:57:EF:2F"  # or a macOS CoreBluetooth UUID
+
+    async with WattcycleClient(device_id) as client:
         await client.detect_frame_head()
 
         info = await client.read_product_info()
@@ -89,6 +93,8 @@ devices = await WattcycleClient.scan(timeout=10.0)
 for d in devices:
     print(f"{d.name} ({d.address})")
 ```
+
+On macOS, `d.address` is the Apple/CoreBluetooth UUID you can pass back into `WattcycleClient(...)` or the CLI.
 
 ## Protocol
 
