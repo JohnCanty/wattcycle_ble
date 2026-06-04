@@ -67,7 +67,7 @@ async def cmd_scan(args: argparse.Namespace) -> None:
 
 async def cmd_read(args: argparse.Namespace) -> None:
     """Connect and read battery data."""
-    async with WattcycleClient(args.mac) as client:
+    async with WattcycleClient(args.device) as client:
         if not await client.detect_frame_head():
             print("Could not communicate with device.", file=sys.stderr)
             sys.exit(1)
@@ -99,7 +99,7 @@ async def cmd_read(args: argparse.Namespace) -> None:
 
 async def cmd_loop(args: argparse.Namespace) -> None:
     """Continuously poll battery data."""
-    async with WattcycleClient(args.mac) as client:
+    async with WattcycleClient(args.device) as client:
         if not await client.detect_frame_head():
             print("Could not communicate with device.", file=sys.stderr)
             sys.exit(1)
@@ -114,8 +114,8 @@ async def cmd_loop(args: argparse.Namespace) -> None:
             print("\nStopped.")
 
 
-def main() -> None:
-    """CLI entry point."""
+def build_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser."""
     parser = argparse.ArgumentParser(
         prog="wattcycle-ble",
         description="BLE client for XDZN/Wattcycle battery monitors",
@@ -136,15 +136,28 @@ def main() -> None:
 
     # read
     read_p = sub.add_parser("read", help="read battery data (default)")
-    read_p.add_argument("mac", help="device MAC address")
+    read_p.add_argument(
+        "device",
+        help="device identifier (MAC address or Apple/CoreBluetooth UUID)",
+    )
 
     # loop
     loop_p = sub.add_parser("loop", help="continuously poll battery data")
-    loop_p.add_argument("mac", help="device MAC address")
+    loop_p.add_argument(
+        "device",
+        help="device identifier (MAC address or Apple/CoreBluetooth UUID)",
+    )
     loop_p.add_argument(
         "-i", "--interval", type=float, default=5.0,
         help="poll interval in seconds (default: 5)",
     )
+
+    return parser
+
+
+def main() -> None:
+    """CLI entry point."""
+    parser = build_parser()
 
     args = parser.parse_args()
 

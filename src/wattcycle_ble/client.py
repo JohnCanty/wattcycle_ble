@@ -45,7 +45,8 @@ class WattcycleClient:
             print(data.soc)
 
     Args:
-        address: BLE MAC address or ``BLEDevice`` to connect to.
+        address: Platform BLE device identifier or ``BLEDevice`` to connect to.
+            On macOS, this is typically the Apple/CoreBluetooth device UUID.
     """
 
     def __init__(self, address: str | BLEDevice):
