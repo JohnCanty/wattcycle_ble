@@ -9,22 +9,58 @@ Protocol reverse-engineered from the `com.gz.wattcycle` Android app. See [PROTOC
 | Device | Firmware | Cells | Notes |
 |--------|----------|-------|-------|
 | XDZN_001_EF2F | WT12_20004SW10_L447 | 4S LiFePO4 | 314 Ah |
+| WT12V100AH100MINIBT | WT30_10004SW13_L_02 | 4S LiFePO4 | 100 Ah |
 
 If you have a different Wattcycle/XDZN device, please open an issue with your results.
 
 ## Installation
 
+Install from GitHub:
+
 ```bash
-pip install git+https://github.com/qume/wattcycle_ble.git
+python3 -m pip install git+https://github.com/qume/wattcycle_ble.git
 ```
 
-Or clone and install locally:
+Or clone and install locally in editable mode:
 
 ```bash
 git clone https://github.com/qume/wattcycle_ble.git
-cd wattcycle-ble
-pip install -e .
+cd wattcycle_ble
+python3 -m pip install -e .
 ```
+
+### macOS
+
+macOS often ships with an older system Python that is too old for this project. `wattcycle-ble` requires Python 3.11+.
+
+Install a supported Python with Homebrew, create a virtual environment, and install from the project root:
+
+```bash
+brew install python@3.12
+
+cd /path/to/wattcycle_ble
+/opt/homebrew/bin/python3.12 -m venv .venv
+source .venv/bin/activate
+
+python -m pip install --upgrade pip
+python -m pip install -e .
+```
+
+Run the CLI from the virtual environment:
+
+```bash
+wattcycle-ble scan
+wattcycle-ble read <device-id>
+```
+
+If the console script is not on your shell path, use the module form instead:
+
+```bash
+python -m wattcycle_ble.cli scan
+python -m wattcycle_ble.cli read <device-id>
+```
+
+The first BLE operation may trigger a macOS Bluetooth permission prompt for your terminal app.
 
 ## CLI Usage
 
@@ -40,6 +76,12 @@ Read battery data:
 wattcycle-ble read <device-id>
 ```
 
+Example on macOS:
+
+```bash
+wattcycle-ble read 6F1D8D3F-0E7E-4A30-9D29-6D49C9A7D6D8
+```
+
 Continuously poll (every 5 seconds):
 
 ```bash
@@ -53,6 +95,8 @@ wattcycle-ble -v read <device-id>
 ```
 
 `<device-id>` is the platform BLE identifier: a MAC address on Linux/Windows or the Apple/CoreBluetooth UUID on macOS.
+
+Use `wattcycle-ble scan` first to discover the identifier to pass into `read` or `loop`.
 
 ## Library Usage
 
