@@ -26,6 +26,7 @@ classifiers = [
 ]
 dependencies = [
     "bleak >= 0.21",
+    "paho-mqtt >= 2.1",
 ]
 
 [project.scripts]

@@ -94,6 +94,66 @@ Add `-v` for debug logging:
 wattcycle-ble -v read <device-id>
 ```
 
+Publish battery data to MQTT instead of printing it:
+
+```bash
+wattcycle-ble read <device-id> -mqtt
+wattcycle-ble loop <device-id> -mqtt --mqtt-host 192.168.1.10 --mqtt-name house-battery
+```
+
+Load the device identifier and MQTT settings from a TOML file:
+
+```bash
+wattcycle-ble read --config battery.toml
+wattcycle-ble loop --config battery.toml
+```
+
+Example `battery.toml`:
+
+```toml
+device = "D422BCFF-4F6D-6407-5A60-98E50E72832A"
+interval = 5
+
+[mqtt]
+enabled = true
+host = "192.168.1.10"
+port = 1883
+username = "mqtt-user"
+password = "mqtt-password"
+name = "house-battery"
+prefix = "garage/batteries"
+retain = true
+```
+
+Values passed on the command line override the config file. For example:
+
+```bash
+wattcycle-ble loop --config battery.toml --interval 10 --mqtt-host test-broker.local
+```
+
+When `-mqtt` is enabled, normal battery output is suppressed and each field is published as a separate topic. By default the topic root is `<serial-or-device-id>`; use `--mqtt-name` to override the battery name and `--mqtt-prefix` to add a prefix such as `garage` or `garage/batteries`.
+
+Common MQTT topics:
+- `<battery-name>/firmware`
+- `<battery-name>/serial`
+- `<battery-name>/SOC`
+- `<battery-name>/Current`
+- `<battery-name>/Voltage`
+- `<battery-name>/Cell1V`
+- `<battery-name>/Delta`
+- `<battery-name>/MOS`
+- `<battery-name>/PCB`
+- `<battery-name>/protections`
+- `<battery-name>/warnings`
+
+MQTT options:
+- `--mqtt-host` broker host, default `localhost`
+- `--mqtt-port` broker port, default `1883`
+- `--mqtt-username` and `--mqtt-password` for broker authentication
+- `--mqtt-name` to override the battery name used in topics
+- `--mqtt-prefix` to prepend a path segment before the battery name
+- `--mqtt-retain` to publish retained messages
+
 `<device-id>` is the platform BLE identifier: a MAC address on Linux/Windows or the Apple/CoreBluetooth UUID on macOS.
 
 Use `wattcycle-ble scan` first to discover the identifier to pass into `read` or `loop`.
@@ -154,6 +214,7 @@ Key points:
 
 - Python 3.11+
 - [bleak](https://github.com/hbldh/bleak) (BLE library)
+- [paho-mqtt](https://github.com/eclipse-paho/paho.mqtt.python) (MQTT publishing)
 - Linux, macOS, or Windows with Bluetooth support
 
 ## License
