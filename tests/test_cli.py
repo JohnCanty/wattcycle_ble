@@ -155,7 +155,7 @@ class TestMqttHelpers:
         pi = ProductInfo(serial_number="WTaEaAA25343102")
 
         assert default_battery_name(APPLE_DEVICE_UUID, pi) == "WTaEaAA25343102"
-        assert build_topic_root("WTaEaAA25343102", "garage/batteries") == "/garage/batteries/WTaEaAA25343102"
+        assert build_topic_root("WTaEaAA25343102", "garage/batteries") == "garage/batteries/WTaEaAA25343102"
 
     def test_build_product_info_fields(self):
         pi = ProductInfo(

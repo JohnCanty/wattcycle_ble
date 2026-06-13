@@ -44,7 +44,7 @@ def build_topic_root(battery_name: str, prefix: str = "") -> str:
             if part
         )
     parts.append(sanitize_topic_segment(battery_name))
-    return "/" + "/".join(parts)
+    return "/".join(parts)
 
 
 def build_product_info_fields(product_info: ProductInfo) -> dict[str, str]:
