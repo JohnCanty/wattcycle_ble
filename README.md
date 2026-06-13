@@ -131,20 +131,20 @@ Values passed on the command line override the config file. For example:
 wattcycle-ble loop --config battery.toml --interval 10 --mqtt-host test-broker.local
 ```
 
-When `-mqtt` is enabled, normal battery output is suppressed and each field is published as a separate topic. By default the topic root is `/<serial-or-device-id>/`; use `--mqtt-name` to override the battery name and `--mqtt-prefix` to add a prefix such as `/garage/`.
+When `-mqtt` is enabled, normal battery output is suppressed and each field is published as a separate topic. By default the topic root is `<serial-or-device-id>`; use `--mqtt-name` to override the battery name and `--mqtt-prefix` to add a prefix such as `garage` or `garage/batteries`.
 
 Common MQTT topics:
-- `/<battery-name>/firmware`
-- `/<battery-name>/serial`
-- `/<battery-name>/SOC`
-- `/<battery-name>/Current`
-- `/<battery-name>/Voltage`
-- `/<battery-name>/Cell1V`
-- `/<battery-name>/Delta`
-- `/<battery-name>/MOS`
-- `/<battery-name>/PCB`
-- `/<battery-name>/protections`
-- `/<battery-name>/warnings`
+- `<battery-name>/firmware`
+- `<battery-name>/serial`
+- `<battery-name>/SOC`
+- `<battery-name>/Current`
+- `<battery-name>/Voltage`
+- `<battery-name>/Cell1V`
+- `<battery-name>/Delta`
+- `<battery-name>/MOS`
+- `<battery-name>/PCB`
+- `<battery-name>/protections`
+- `<battery-name>/warnings`
 
 MQTT options:
 - `--mqtt-host` broker host, default `localhost`
