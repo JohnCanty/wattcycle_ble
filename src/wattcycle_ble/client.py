@@ -85,6 +85,13 @@ class WattcycleClient:
             logger.info("Found: %s (%s)", d.name, d.address)
         return matches
 
+    @staticmethod
+    def _is_wattcycle_device(device: BLEDevice) -> bool:
+        """Whether a discovered BLE device looks like a Wattcycle battery."""
+        return bool(
+            device.name and any(device.name.startswith(prefix) for prefix in DEVICE_NAME_PREFIXES)
+        )
+
     def _notification_handler(self, _sender: object, data: bytearray) -> None:
         """Handle incoming BLE notifications (packet reassembly)."""
         self._response_buffer.extend(data)
@@ -110,6 +117,27 @@ class WattcycleClient:
 
         device = await BleakScanner.find_device_by_address(self._address, timeout=10.0)
         if device is None:
+            matches = await self.scan(timeout=10.0)
+            if len(matches) == 1:
+                fallback = matches[0]
+                logger.warning(
+                    "Configured address %s was not found; using discovered device %s (%s) instead.",
+                    self._address,
+                    fallback.name,
+                    fallback.address,
+                )
+                return fallback
+
+            if matches:
+                choices = ", ".join(
+                    f"{match.name} ({match.address})" for match in matches if self._is_wattcycle_device(match)
+                )
+                raise RuntimeError(
+                    f"Device with address {self._address} was not found during scan. "
+                    "Multiple Wattcycle devices are advertising; update the configured device identifier. "
+                    f"Detected: {choices}"
+                )
+
             raise RuntimeError(
                 f"Device with address {self._address} was not found during scan. "
                 "Make sure the battery is awake and advertising."
