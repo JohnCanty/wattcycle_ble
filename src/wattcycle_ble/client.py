@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sys
 
 from bleak import BleakClient, BleakScanner
 from bleak.backends.device import BLEDevice
@@ -94,10 +95,32 @@ class WattcycleClient:
         if self._expected_len and len(self._response_buffer) >= self._expected_len:
             self._response_event.set()
 
+    async def _resolve_connect_target(self) -> str | BLEDevice:
+        """Resolve the target passed into ``BleakClient``.
+
+        BlueZ may reject a raw MAC address until the device has been discovered
+        in the current adapter session, so perform an address lookup first on
+        Linux when the caller supplied a string identifier.
+        """
+        if isinstance(self._address, BLEDevice):
+            return self._address
+
+        if sys.platform != "linux":
+            return self._address
+
+        device = await BleakScanner.find_device_by_address(self._address, timeout=10.0)
+        if device is None:
+            raise RuntimeError(
+                f"Device with address {self._address} was not found during scan. "
+                "Make sure the battery is awake and advertising."
+            )
+        return device
+
     async def connect(self) -> None:
         """Connect to the device, enable notifications, and authenticate."""
         logger.info("Connecting to %s...", self._address)
-        self._client = BleakClient(self._address)
+        target = await self._resolve_connect_target()
+        self._client = BleakClient(target)
         await self._client.connect()
         logger.info("Connected")
 
