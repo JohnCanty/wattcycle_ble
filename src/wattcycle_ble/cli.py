@@ -319,34 +319,38 @@ async def cmd_loop(args: argparse.Namespace) -> None:
         if publisher is not None:
             publisher.connect()
 
-        async with WattcycleClient(args.mac) as client:
-            if not await client.detect_frame_head():
-                print("Could not communicate with device.", file=sys.stderr)
-                sys.exit(1)
+        while True:
+            try:
+                async with WattcycleClient(args.mac) as client:
+                    if not await client.detect_frame_head():
+                        raise RuntimeError("Could not communicate with device.")
 
-            pi = await client.read_product_info()
-            topic_root = _mqtt_topic_root(args, pi)
-            if pi:
-                if publisher is not None:
-                    publisher.publish_fields(topic_root, build_product_info_fields(pi))
-                else:
-                    print_product_info(pi)
+                    pi = await client.read_product_info()
+                    topic_root = _mqtt_topic_root(args, pi)
+                    if pi:
+                        if publisher is not None:
+                            publisher.publish_fields(topic_root, build_product_info_fields(pi))
+                        else:
+                            print_product_info(pi)
 
-            while True:
-                aq = await client.read_analog_quantity()
-                if aq:
-                    if publisher is not None:
-                        publisher.publish_fields(topic_root, build_analog_quantity_fields(aq))
-                    else:
-                        print_battery_data(aq)
+                    while True:
+                        aq = await client.read_analog_quantity()
+                        if aq:
+                            if publisher is not None:
+                                publisher.publish_fields(topic_root, build_analog_quantity_fields(aq))
+                            else:
+                                print_battery_data(aq)
 
-                wi = await client.read_warning_info()
-                if wi:
-                    if publisher is not None:
-                        publisher.publish_fields(topic_root, build_warning_info_fields(wi))
-                    else:
-                        print_warning_info(wi)
+                        wi = await client.read_warning_info()
+                        if wi:
+                            if publisher is not None:
+                                publisher.publish_fields(topic_root, build_warning_info_fields(wi))
+                            else:
+                                print_warning_info(wi)
 
+                        await asyncio.sleep(args.interval)
+            except RuntimeError as exc:
+                print(str(exc), file=sys.stderr)
                 await asyncio.sleep(args.interval)
     except KeyboardInterrupt:
         if not args.mqtt:
